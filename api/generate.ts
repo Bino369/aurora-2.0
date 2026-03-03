@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -58,13 +58,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           },
           required: ["hero", "about", "services", "contact", "ctaText"],
         },
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
       },
     });
 
     const content = JSON.parse(response.text);
     return res.status(200).json(content);
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Error:", error);
-    return res.status(500).json({ error: "Failed to generate content" });
+    return res.status(500).json({ 
+      error: "Failed to generate content", 
+      details: error.message || String(error) 
+    });
   }
 }

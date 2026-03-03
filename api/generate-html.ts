@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -19,28 +19,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Generate a complete, standalone single-file HTML website for:
-        Business Name: ${request.businessName}
-        Business Type: ${request.businessType}
+      contents: `Generate a concise, professional, standalone single-file HTML website for:
+        Business: ${request.businessName} (${request.businessType})
         Services: ${request.services}
-        Target Audience: ${request.targetAudience}
+        Target: ${request.targetAudience}
         Contact: ${request.email}, ${request.phone}
-        Notes: ${request.notes}
         
         Requirements:
-        - Use modern Tailwind CSS (via CDN).
-        - Include a hero section, about, services cards, and contact footer.
-        - Make it responsive and professional.
-        - Output ONLY the raw HTML code starting with <!DOCTYPE html>.`,
+        - Modern Tailwind CSS (CDN).
+        - Hero, About, Services, Contact.
+        - Responsive.
+        - Output ONLY raw HTML.`,
       config: {
-        systemInstruction: "You are a world-class web developer. Generate high-quality, production-ready standalone HTML files.",
+        systemInstruction: "You are a world-class web developer. Generate high-quality, production-ready standalone HTML files. Be extremely concise to minimize generation time.",
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
       },
     });
 
     const html = response.text || '';
     return res.status(200).json({ html });
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Error:", error);
-    return res.status(500).json({ error: "Failed to generate HTML" });
+    return res.status(500).json({ 
+      error: "Failed to generate HTML", 
+      details: error.message || String(error) 
+    });
   }
 }

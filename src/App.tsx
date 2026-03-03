@@ -260,7 +260,10 @@ export default function App() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to generate content');
+        const errorMessage = errorData.details 
+          ? `${errorData.error}: ${errorData.details}` 
+          : (errorData.error || 'Failed to generate content');
+        throw new Error(errorMessage);
       }
       const content = await response.json();
       setAiContent(content);
@@ -328,8 +331,14 @@ export default function App() {
       });
 
       if (!response.ok) {
+        if (response.status === 504) {
+          throw new Error("Vercel Timeout: The website generation took too long for the free tier. Please try again or simplify the request.");
+        }
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to generate HTML');
+        const errorMessage = errorData.details 
+          ? `${errorData.error}: ${errorData.details}` 
+          : (errorData.error || 'Failed to generate HTML');
+        throw new Error(errorMessage);
       }
       const { html } = await response.json();
 
