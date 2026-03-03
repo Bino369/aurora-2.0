@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import { generateWebsiteContent } from "./api/generate";
+import generateHandler from "./api/generate";
+import generateHtmlHandler from "./api/generate-html";
 
 async function startServer() {
   const app = express();
@@ -8,28 +9,15 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Routes
+  // API Routes (Mocking Vercel Function behavior locally)
   app.post("/api/generate", async (req, res) => {
-    try {
-      const data = req.body;
-      const content = await generateWebsiteContent(data);
-      res.json(content);
-    } catch (error) {
-      console.error("API Error:", error);
-      res.status(500).json({ error: "Failed to generate content" });
-    }
+    // @ts-ignore
+    await generateHandler(req, res);
   });
 
   app.post("/api/generate-html", async (req, res) => {
-    try {
-      const { generateFullHTML } = await import("./api/generate");
-      const data = req.body;
-      const html = await generateFullHTML(data);
-      res.json({ html });
-    } catch (error) {
-      console.error("API Error:", error);
-      res.status(500).json({ error: "Failed to generate HTML" });
-    }
+    // @ts-ignore
+    await generateHtmlHandler(req, res);
   });
 
   // Vite middleware for development
