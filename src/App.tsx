@@ -258,11 +258,15 @@ export default function App() {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Failed to generate content');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate content');
+      }
       const content = await response.json();
       setAiContent(content);
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Generation failed:", error);
+      alert(error.message || 'Failed to generate preview. Please try again.');
       // Fallback content if AI fails
       setAiContent({
         hero: { headline: `Welcome to ${data.businessName}`, tagline: `Premier ${data.businessType} services.` },
@@ -323,7 +327,10 @@ export default function App() {
         body: JSON.stringify(request),
       });
 
-      if (!response.ok) throw new Error('Failed to generate HTML');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate HTML');
+      }
       const { html } = await response.json();
 
       const updatedRequests = requests.map(r => 
@@ -331,9 +338,9 @@ export default function App() {
       );
       saveRequests(updatedRequests);
       alert('Website generated successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Full Generation failed:", error);
-      alert('Failed to generate website. Please try again.');
+      alert(error.message || 'Failed to generate website. Please try again.');
     } finally {
       setIsGenerating(false);
     }
